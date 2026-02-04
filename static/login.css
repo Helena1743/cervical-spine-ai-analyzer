@@ -1,0 +1,163 @@
+/* ===== Background ===== */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #3a7bd5, #3a6073);
+  background-size: cover;
+}
+
+/* ===== Container ===== */
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+/* ===== Login Card ===== */
+.login-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 20px;
+  padding: 40px 35px;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  color: #fff;
+  text-align: center;
+}
+
+/* ===== Header ===== */
+.login-header h1 {
+  margin: 0 0 25px 0;
+  font-size: 32px;   /* ⬆ bigger font */
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.4;
+  background: linear-gradient(90deg, #4facfe, #00f2fe);
+  background-clip: text;           
+  -webkit-background-clip: text;   
+  -moz-background-clip: text;      
+  color: transparent;
+  -webkit-text-fill-color: transparent; 
+  -moz-text-fill-color: transparent;    
+}
+
+/* ===== Form ===== */
+.login-form {
+  text-align: left;
+}
+
+/* ===== Input Group ===== */
+.input-group {
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.input-group label {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 6px;
+  color: #e0e0e0;
+}
+
+.input-group input {
+  width: calc(100% - 0px);   /* ensure it fits the card width */
+  box-sizing: border-box;    /* prevents overflow */
+  padding: 10px 40px 10px 12px;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 14px;
+}
+
+.input-group input::placeholder {
+  color: #cfd8dc;
+}
+
+/* ===== Icons in Input Field ===== */
+.input-icon {
+  position: absolute;
+  right: 10px;
+  top: 70%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 16px;
+  color: #aaa;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.input-icon svg {
+  width: 18px;
+  height: 18px;
+  stroke: #aaa;
+}
+
+.input-icon svg:hover {
+  stroke: #fff;
+}
+
+/* ===== Password Wrapper ===== */
+.password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.password-wrapper input {
+  width: 100%;
+  padding-right: 70px; /* space for icons */
+}
+
+/* ===== Toggle & Clear Icons ===== */
+.toggle-icon,
+.clear-icon {
+  position: absolute;
+  top: 50%;                  /* middle of the input */
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 16px;
+  color: #ccc;
+  user-select: none;
+}
+
+.toggle-icon {
+  right: 35px; /* eye icon */
+}
+
+.clear-icon {
+  right: 10px; /* x icon */
+}
+
+.toggle-icon:hover,
+.clear-icon:hover {
+  color: #fff;
+}
+
+/* ===== Buttons ===== */
+.btn-primary {
+  display: block;             /* full control of placement */
+  margin: 25px auto 0 auto;   /* ⬆ add top gap, center horizontally */
+  padding: 12px 40px;         /* good spacing around text */
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.3s;
+  background: linear-gradient(90deg, #4facfe, #00f2fe);
+  color: #fff;
+  font-weight: 600;
+  width: auto;                /* button fits the text, not full width */
+  text-align: center;
+}
+.btn-primary:hover {
+  opacity: 0.9;
+}

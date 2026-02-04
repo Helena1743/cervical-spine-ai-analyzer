@@ -1,0 +1,50 @@
+{
+  "filename": "20260203_131500_f8a5f10e_1.png",
+  "timestamp": "2026-02-03 13:15:03",
+  "image_size": [
+    512,
+    512,
+    3
+  ],
+  "total_pixels": 262144,
+  "bone_parts": {
+    "part_1": {
+      "pixels": 472,
+      "percentage": 0.1800537109375
+    },
+    "part_2": {
+      "pixels": 1008,
+      "percentage": 0.384521484375
+    },
+    "part_3": {
+      "pixels": 728,
+      "percentage": 0.2777099609375
+    },
+    "part_4": {
+      "pixels": 512,
+      "percentage": 0.1953125
+    },
+    "part_5": {
+      "pixels": 2208,
+      "percentage": 0.84228515625
+    },
+    "part_6": {
+      "pixels": 1456,
+      "percentage": 0.555419921875
+    },
+    "part_7": {
+      "pixels": 1568,
+      "percentage": 0.59814453125
+    },
+    "part_8": {
+      "pixels": 1008,
+      "percentage": 0.384521484375
+    }
+  },
+  "summary": {
+    "background_percentage": 96.58203125,
+    "bone_pixels": 8960,
+    "bone_percentage": 3.41796875,
+    "num_bone_parts": 8
+  }
+}

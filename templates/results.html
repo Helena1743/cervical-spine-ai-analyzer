@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis Results - Cervical Spine AI Analyzer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='results.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header -->
+    <header class="clinical-header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="logo-container">
+                    <i class="fas fa-x-ray"></i>
+                </div>
+                <div class="header-info">
+                    <h1 class="header-title">Cervical Spine AI Analyzer</h1>
+                    <span class="header-subtitle">Segmentation Analysis Results</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="user-section">
+                    <i class="fas fa-user-md"></i>
+                    <span class="user-name">{{ session.user }}</span>
+                </div>
+                <div class="header-actions">
+                    <a href="{{ url_for('routes.download', analysis_id=analysis_id, file_type='mask') }}" 
+                       class="action-btn btn-mask" title="Download segmentation mask">
+                        <i class="fas fa-layer-group"></i>
+                        <span>Mask</span>
+                    </a>
+                    <a href="{{ url_for('routes.download', analysis_id=analysis_id, file_type='overlay') }}" 
+                       class="action-btn btn-overlay" title="Download overlay image">
+                        <i class="fas fa-image"></i>
+                        <span>Overlay</span>
+                    </a>
+                    <a href="{{ url_for('routes.download', analysis_id=analysis_id, file_type='stats') }}" 
+                       class="action-btn btn-stats" title="Download statistics report">
+                        <i class="fas fa-file-csv"></i>
+                        <span>Report</span>
+                    </a>
+                    <a href="{{ url_for('routes.analyze') }}" class="action-btn btn-secondary" title="Analyze another image">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>New Analysis</span>
+                    </a>
+                    <a href="{{ url_for('routes.logout') }}" class="action-btn btn-logout" title="Logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- File Information Bar -->
+        <div class="file-info-bar">
+            <div class="info-item">
+                <i class="fas fa-file-image"></i>
+                <span class="info-label">File:</span>
+                <span class="info-value">{{ summary.filename }}</span>
+            </div>
+            <div class="divider"></div>
+            <div class="info-item">
+                <i class="fas fa-calendar"></i>
+                <span class="info-label">Timestamp:</span>
+                <span class="info-value">{{ summary.timestamp }}</span>
+            </div>
+            <div class="divider"></div>
+            <div class="info-item">
+                <i class="fas fa-barcode"></i>
+                <span class="info-label">Analysis ID:</span>
+                <span class="info-value analysis-id">{{ analysis_id }}</span>
+            </div>
+        </div>
+
+        <!-- Split Pane Container (70% Left, 30% Right) -->
+        <div class="split-pane-container">
+            <!-- Left: Image Viewer Section (70%) -->
+            <div class="image-viewer-section">
+                <div class="viewer-header">
+                    <h2 class="viewer-title">
+                        <i class="fas fa-image"></i>
+                        Segmentation Result
+                    </h2>
+                </div>
+
+                <!-- Static Overlay Image Display -->
+                <div class="image-container">
+                    <img src="{{ url_for('static', filename=overlay_image) }}" 
+                         alt="Segmentation Overlay" 
+                         class="overlay-image"
+                         id="overlayImage">
+                </div>
+            </div>
+
+            <!-- Right: Radiologist's Toolkit (30%) -->
+            <aside class="toolkit-sidebar">
+                <div class="toolkit-header">
+                    <i class="fas fa-tools"></i>
+                    <h3>Vertebrae Legend</h3>
+                </div>
+                <div class="vertebrae-legend" id="vertebraeLegend">
+                    <div class="legend-item" 
+                         data-class="1" 
+                         onmouseenter="highlightVertebra(1, true)"
+                         onmouseleave="highlightVertebra(1, false)">
+                        <div class="legend-color" style="background-color: #ffc982;"></div>
+                        <div class="legend-info">
+                            <div class="legend-class">A</div>
+                            <div class="legend-name">C1 Anterior Tubercle</div>
+                        </div>
+                    </div>
+                    <div class="legend-item" 
+                         data-class="2"
+                         onmouseenter="highlightVertebra(2, true)"
+                         onmouseleave="highlightVertebra(2, false)">
+                        <div class="legend-color" style="background-color: #e53935;"></div>
+                        <div class="legend-info">
+                            <div class="legend-class">B</div>
+                            <div class="legend-name">Odontoid Process</div>
+                        </div>
+                    </div>
+                    <div class="legend-item" 
+                         data-class="3"
+                         onmouseenter="highlightVertebra(3, true)"
+                         onmouseleave="highlightVertebra(3, false)">
+                        <div class="legend-color" style="background-color: #d39cfe;"></div>
+                        <div class="legend-info">
+                            <div class="legend-class">C</div>
+                            <div class="legend-name">C1 Posterior Arch</div>
+                        </div>
+                    </div>
+                    <div class="legend-item" 
+                         data-class="4"
+                         onmouseenter="highlightVertebra(4, true)"
+                         onmouseleave="highlightVertebra(4, false)">
+                        <div class="legend-color" style="background-color: #ff7fe3;"></div>
+                        <div class="legend-info">
+                            <div class="legend-class">D</div>
+                            <div class="legend-name">C1 Posterior Tubercle</div>
+                        </div>
+                    </div>
+                    <div class="legend-item" 
+                         data-class="5"
+                         onmouseenter="highlightVertebra(5, true)"
+                         onmouseleave="highlightVertebra(5, false)">
+                        <div class="legend-color" style="background-color: #b5b5b7;"></div>
+                        <div class="legend-info">
+                            <div class="legend-class">E</div>
+                            <div class="legend-name">C2 Body</div>
+                        </div>
+                    </div>
+                    <div class="legend-item" 
+                         data-class="6"
+                         onmouseenter="highlightVertebra(6, true)"
+                         onmouseleave="highlightVertebra(6, false)">
+                        <div class="legend-color" style="background-color: #00cce7;"></div>
+                        <div class="legend-info">
+                            <div class="legend-class">F</div>
+                            <div class="legend-name">C2 Spinous Process</div>
+                        </div>
+                    </div>
+                    <div class="legend-item" 
+                         data-class="7"
+                         onmouseenter="highlightVertebra(7, true)"
+                         onmouseleave="highlightVertebra(7, false)">
+                        <div class="legend-color" style="background-color: #a3def5;"></div>
+                        <div class="legend-info">
+                            <div class="legend-class">G</div>
+                            <div class="legend-name">C5 Body</div>
+                        </div>
+                    </div>
+                    <div class="legend-item" 
+                         data-class="8"
+                         onmouseenter="highlightVertebra(8, true)"
+                         onmouseleave="highlightVertebra(8, false)">
+                        <div class="legend-color" style="background-color: #059205;"></div>
+                        <div class="legend-info">
+                            <div class="legend-class">H</div>
+                            <div class="legend-name">C5 Spinous Process</div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+
+        <!-- Q&A Analysis Section -->
+        <section class="qa-section">
+            <div class="qa-header">
+                <i class="fas fa-comments"></i>
+                <h2>Clinical Question & AI Finding</h2>
+            </div>
+            <div class="qa-content">
+                <div class="qa-item qa-question">
+                    <div class="qa-label">
+                        <i class="fas fa-question-circle"></i>
+                        Clinical Question
+                    </div>
+                    <div class="qa-text">
+                        {% if analysis_question %}
+                            {{ analysis_question }}
+                        {% else %}
+                            <span class="qa-empty">No specific clinical question provided</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="qa-item qa-answer">
+                    <div class="qa-label">
+                        <i class="fas fa-lightbulb"></i>
+                        AI Finding
+                    </div>
+                    <div class="qa-text">
+                        <p><strong>Segmentation Complete:</strong> The AI model has successfully segmented <span class="highlight">{{ summary.num_parts }}</span> bone structures within the cervical spine region.</p>
+                        <p><strong>Coverage:</strong> The detected bone structures cover <span class="highlight">{{ summary.bone_area }}</span> of the total image area ({{ summary.bone_pixels }} pixels).</p>
+                        <p><strong>Background:</strong> Background areas represent {{ summary.background }}% of the image.</p>
+                        <p>Refer to the detailed metrics table below for per-vertebra analysis and measurements.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Detailed Metrics Table Section -->
+        <section class="metrics-section">
+            <div class="metrics-header">
+                <i class="fas fa-chart-bar"></i>
+                <h2>Detailed Analysis Metrics</h2>
+                <span class="metrics-subtitle">Per-Vertebra Segmentation Statistics</span>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="summary-cards">
+                <div class="summary-card">
+                    <div class="card-icon">
+                        <i class="fas fa-image"></i>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-label">Image Dimensions</div>
+                        <div class="card-value">{{ summary.image_size }}</div>
+                        <div class="card-detail">{{ summary.total_pixels }} total pixels</div>
+                    </div>
+                </div>
+                <div class="summary-card">
+                    <div class="card-icon">
+                        <i class="fas fa-bone"></i>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-label">Bone Area Detected</div>
+                        <div class="card-value">{{ summary.bone_area }}</div>
+                        <div class="card-detail">{{ summary.bone_pixels }} bone pixels</div>
+                    </div>
+                </div>
+                <div class="summary-card">
+                    <div class="card-icon">
+                        <i class="fas fa-shapes"></i>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-label">Bone Parts Detected</div>
+                        <div class="card-value">{{ summary.num_parts }}</div>
+                        <div class="card-detail">Different anatomical structures</div>
+                    </div>
+                </div>
+                <div class="summary-card">
+                    <div class="card-icon">
+                        <i class="fas fa-background"></i>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-label">Background Coverage</div>
+                        <div class="card-value">{{ summary.background }}</div>
+                        <div class="card-detail">Non-bone regions</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Metrics Table -->
+            <div class="table-wrapper">
+                <table class="metrics-table">
+                    <thead>
+                        <tr>
+                            <th class="col-class">
+                                <i class="fas fa-hashtag"></i>
+                                Class
+                            </th>
+                            <th class="col-name">
+                                <i class="fas fa-bone"></i>
+                                Anatomical Structure
+                            </th>
+                            <th class="col-pixels">
+                                <i class="fas fa-th"></i>
+                                Pixel Count
+                            </th>
+                            <th class="col-percentage">
+                                <i class="fas fa-percentage"></i>
+                                Coverage %
+                            </th>
+                            <th class="col-status">
+                                <i class="fas fa-check-circle"></i>
+                                Status
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if bone_parts %}
+                            {% for part in bone_parts %}
+                            <tr class="table-row">
+                                <td class="cell-class">
+                                    <span class="class-badge">{{ part.class }}</span>
+                                </td>
+                                <td class="cell-name">{{ part.name }}</td>
+                                <td class="cell-pixels">{{ part.pixels }}</td>
+                                <td class="cell-percentage">
+                                    <div class="progress-bar">
+                                        {% set percentage_value = part.percentage|replace('%', '')|float %}
+                                        <div class="progress-fill" style="width: {{ percentage_value }}%"></div>
+                                        <span class="progress-text">{{ part.percentage }}</span>
+                                    </div>
+                                </td>
+                                <td class="cell-status">
+                                    <span class="status-badge status-detected">Detected</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="no-data-message">
+                                    <i class="fas fa-info-circle"></i>
+                                    No bone parts detected in this image.
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <!-- Data for JavaScript -->
+    <script>
+        window.ANALYSIS_DATA = {
+            analysisId: '{{ analysis_id }}',
+            filename: '{{ summary.filename }}',
+            timestamp: '{{ summary.timestamp }}'
+        };
+    </script>
+    <script src="{{ url_for('static', filename='results.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cervical Spine Image Segmentation - Login</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-card">
+      <!-- Header -->
+      <div class="login-header">
+        <h1 style="font-size: 32px;">Cervical Spine Image Segmentation</h1>
+      </div>
+
+      <!-- Login Form -->
+      <form class="login-form" method="POST">
+        <!-- Username -->
+        <div class="input-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" name="username" placeholder="Enter your username" required>
+          <span class="input-icon" onclick="clearInput('username')">
+            <!-- Grey X -->
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </span>
+        </div>
+
+        <!-- Password -->
+        <div class="input-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" placeholder="Enter your password" required>
+          <span class="input-icon">
+            <!-- Eye Toggle -->
+            <svg id="togglePassword" xmlns="http://www.w3.org/2000/svg" fill="none"
+              viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 
+                   9.542 7-1.274 4.057-5.065 7-9.542 7
+                   -4.477 0-8.268-2.943-9.542-7z"/>
+            </svg>
+
+            <!-- Clear (X) -->
+            <svg onclick="clearInput('password')" xmlns="http://www.w3.org/2000/svg" fill="none"
+              viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </span>
+        </div>
+
+        <button type="submit" class="btn-primary">Login</button>
+
+        {% if error %}
+        <p style="color: red; text-align: center;">{{ error }}</p>
+        {% endif %}
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Clear input field
+    function clearInput(id) {
+      document.getElementById(id).value = "";
+    }
+
+    // Toggle password visibility
+    document.getElementById("togglePassword").addEventListener("click", function () {
+      const passwordField = document.getElementById("password");
+      if (passwordField.type === "password") {
+        passwordField.type = "text";
+        this.innerHTML = `
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7
+            a10.05 10.05 0 011.658-3.045M6.223 6.223A9.959 9.959 0 0112 5
+            c4.477 0 8.268 2.943 9.542 7a9.959 9.959 0 01-4.03 4.764M15 12
+            a3 3 0 11-6 0 3 3 0 016 0z"/>`;
+      } else {
+        passwordField.type = "password";
+        this.innerHTML = `
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 
+               9.542 7-1.274 4.057-5.065 7-9.542 7
+               -4.477 0-8.268-2.943-9.542-7z"/>`;
+      }
+    });
+  </script>
+</body>
+</html>
