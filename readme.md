@@ -107,8 +107,5 @@ The system uses a pretrained deep learning model for cervical spine bone segment
 This application is intended for educational and research purposes only. It is not a certified medical device and should not be used for clinical diagnosis or treatment decisions.
 
 ---
+Version's Date: 10/02/2026
 
-
-5. Open the browser at
-
-http://127.0.0.1:5000
