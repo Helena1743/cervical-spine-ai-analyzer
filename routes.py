@@ -10,13 +10,22 @@ import numpy as np
 routes = Blueprint("routes", __name__)
 
 # Configuration
-UPLOAD_FOLDER = 'static/uploads'
-RESULTS_FOLDER = 'static/results'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'tif', 'tiff'}
+
+# Detect Render environment
+IS_RENDER = os.environ.get("RENDER", False)
+
+if IS_RENDER:
+    UPLOAD_FOLDER = "/tmp/uploads"
+    RESULTS_FOLDER = "/tmp/results"
+else:
+    UPLOAD_FOLDER = "static/uploads"
+    RESULTS_FOLDER = "static/results"
 
 # Ensure folders exist
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(RESULTS_FOLDER, exist_ok=True)
+
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
