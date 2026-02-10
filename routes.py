@@ -23,8 +23,10 @@ else:
     RESULTS_FOLDER = "static/results"
 
 # Ensure folders exist
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-os.makedirs(RESULTS_FOLDER, exist_ok=True)
+# Ensure folders exist (ONLY create local static folders)
+if not IS_RENDER:
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+    os.makedirs(RESULTS_FOLDER, exist_ok=True)
 
 
 def allowed_file(filename):
