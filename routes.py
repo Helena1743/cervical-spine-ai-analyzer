@@ -23,14 +23,17 @@ else:
     RESULTS_FOLDER = "static/results"
 
 # Ensure folders exist
-# Ensure folders exist (ONLY create local static folders)
-if not IS_RENDER:
+if IS_RENDER:
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+    os.makedirs(RESULTS_FOLDER, exist_ok=True)
+else:
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
     os.makedirs(RESULTS_FOLDER, exist_ok=True)
 
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 @routes.route("/", methods=["GET", "POST"])
 def login():
@@ -47,6 +50,7 @@ def login():
 
     return render_template("login.html")
 
+
 @routes.route("/analyze", methods=["GET", "POST"])
 def analyze():
     if "user" not in session:
@@ -57,7 +61,6 @@ def analyze():
         flash('Bone segmentation model is not loaded. Please check if the model file exists.', 'error')
     
     if request.method == "POST":
-        # Check if file was uploaded
         if 'xray_file' not in request.files:
             flash('No file selected', 'error')
             return redirect(request.url)
@@ -70,40 +73,32 @@ def analyze():
         
         if file and allowed_file(file.filename):
             try:
-                # Generate unique ID for this analysis
                 analysis_id = str(uuid.uuid4())[:8]
                 timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
                 
-                # Save uploaded file
                 filename = secure_filename(file.filename)
                 unique_filename = f"{timestamp}_{analysis_id}_{filename}"
                 upload_path = os.path.join(UPLOAD_FOLDER, unique_filename)
                 file.save(upload_path)
                 
-                # Create results directory for this analysis
                 result_dir = os.path.join(RESULTS_FOLDER, analysis_id)
                 os.makedirs(result_dir, exist_ok=True)
                 
-                # Check if model is ready
                 if not hasattr(bone_model, 'model') or bone_model.model is None:
                     flash('Model is not loaded. Please ensure model/bone_parts_segmentation.pth exists.', 'error')
                     return redirect(request.url)
                 
-                # Run bone segmentation
                 pred_mask, original_img = bone_model.predict(upload_path)
                 
-                # Generate visualizations and get statistics
                 results = bone_model.generate_visualizations(
-                    original_img, 
-                    pred_mask, 
-                    result_dir, 
+                    original_img,
+                    pred_mask,
+                    result_dir,
                     unique_filename
                 )
                 
-                # Capture analysis notes/question
                 analysis_notes = request.form.get('notes', '').strip()
                 
-                # Store results in session for display
                 session['last_analysis'] = {
                     'analysis_id': analysis_id,
                     'original_image': f"uploads/{unique_filename}",
@@ -127,19 +122,16 @@ def analyze():
     
     return render_template("analyze.html")
 
+
 @routes.route("/results/<analysis_id>")
 def results(analysis_id):
     if "user" not in session:
         return redirect(url_for("routes.login"))
     
-    # Get analysis results from session
     if 'last_analysis' in session and session['last_analysis']['analysis_id'] == analysis_id:
         analysis_data = session['last_analysis']
-        
-        # Format statistics for display
         stats = analysis_data['statistics']
         
-        # Vertebrae class mapping
         vertebrae_mapping = {
             'part_1': {'class': 'G', 'name': 'C5 Body'},
             'part_2': {'class': 'H', 'name': 'C5 Spinous Process'},
@@ -151,18 +143,19 @@ def results(analysis_id):
             'part_8': {'class': 'D', 'name': 'C1 Posterior Tubercle'}
         }
         
-        # Create bone parts table data
         bone_parts = []
         if 'bone_parts' in stats:
             for part_name, part_data in stats['bone_parts'].items():
-                mapping = vertebrae_mapping.get(part_name, {'class': 0, 'name': part_name.replace('_', ' ').title()})
+                mapping = vertebrae_mapping.get(
+                    part_name,
+                    {'class': 0, 'name': part_name.replace('_', ' ').title()}
+                )
                 bone_parts.append({
                     'class': mapping['class'],
                     'name': mapping['name'],
                     'pixels': f"{part_data['pixels']:,}",
                     'percentage': f"{part_data['percentage']:.2f}%"
                 })
-            # Sort by class number
             bone_parts.sort(key=lambda x: x['class'])
         
         summary = {
@@ -189,6 +182,7 @@ def results(analysis_id):
     flash('Analysis not found. Please upload a new X-ray image.', 'error')
     return redirect(url_for('routes.analyze'))
 
+
 @routes.route("/download/<analysis_id>/<file_type>")
 def download(analysis_id, file_type):
     if "user" not in session:
@@ -199,51 +193,34 @@ def download(analysis_id, file_type):
         flash('Invalid file type', 'error')
         return redirect(url_for('routes.results', analysis_id=analysis_id))
     
-    file_path = None
-    filename = ""
-    
     if 'last_analysis' in session and session['last_analysis']['analysis_id'] == analysis_id:
         result_dir = os.path.join(RESULTS_FOLDER, analysis_id)
-        
-        # Find files in result directory
         import glob
+        
         if file_type == 'mask':
-            file_pattern = os.path.join(result_dir, "mask_*.png")
-            actual_files = glob.glob(file_pattern)
-            if actual_files:
-                filename = f"bone_segmentation_mask_{analysis_id}.png"
-                return send_file(
-                    actual_files[0],
-                    as_attachment=True,
-                    download_name=filename
-                )
+            files = glob.glob(os.path.join(result_dir, "mask_*.png"))
+            if files:
+                return send_file(files[0], as_attachment=True,
+                                 download_name=f"bone_segmentation_mask_{analysis_id}.png")
+        
         elif file_type == 'overlay':
-            file_pattern = os.path.join(result_dir, "overlay_*.png")
-            actual_files = glob.glob(file_pattern)
-            if actual_files:
-                filename = f"bone_segmentation_overlay_{analysis_id}.png"
-                return send_file(
-                    actual_files[0],
-                    as_attachment=True,
-                    download_name=filename
-                )
+            files = glob.glob(os.path.join(result_dir, "overlay_*.png"))
+            if files:
+                return send_file(files[0], as_attachment=True,
+                                 download_name=f"bone_segmentation_overlay_{analysis_id}.png")
+        
         elif file_type == 'stats':
-            file_pattern = os.path.join(result_dir, "stats_*.json")
-            actual_files = glob.glob(file_pattern)
-            if actual_files:
-                filename = f"bone_segmentation_stats_{analysis_id}.json"
-                return send_file(
-                    actual_files[0],
-                    as_attachment=True,
-                    download_name=filename
-                )
+            files = glob.glob(os.path.join(result_dir, "stats_*.json"))
+            if files:
+                return send_file(files[0], as_attachment=True,
+                                 download_name=f"bone_segmentation_stats_{analysis_id}.json")
     
     flash('File not found', 'error')
     return redirect(url_for('routes.results', analysis_id=analysis_id))
 
+
 @routes.route("/model_status")
 def model_status():
-    """Check model status"""
     if "user" not in session:
         return redirect(url_for("routes.login"))
     
@@ -255,6 +232,7 @@ def model_status():
     }
     
     return jsonify(status)
+
 
 @routes.route("/logout")
 def logout():
