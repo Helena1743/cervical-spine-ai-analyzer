@@ -4,271 +4,271 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload Analysis - Cervical Spine AI Analyzer</title>
+
+    <!-- Styles -->
     <link rel="stylesheet" href="{{ url_for('static', filename='analyze.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
+
 <body>
-    <!-- Header -->
-    <header class="clinical-header">
-        <div class="header-content">
-            <div class="header-left">
-                <div class="logo-container">
-                    <i class="fas fa-x-ray"></i>
-                </div>
-                <div class="header-info">
-                    <h1 class="header-title">Cervical Spine AI Analyzer</h1>
-                    <span class="header-subtitle">Upload & Analyze X-Ray Image</span>
-                </div>
+
+<!-- ================= HEADER ================= -->
+<header class="clinical-header">
+    <div class="header-content">
+
+        <div class="header-left">
+            <div class="logo-container">
+                <i class="fas fa-x-ray"></i>
             </div>
-            <div class="header-right">
-                <div class="user-section">
-                    <i class="fas fa-user-md"></i>
-                    <span class="user-name">{{ session.user }}</span>
-                </div>
-                <a href="{{ url_for('routes.logout') }}" class="action-btn btn-logout" title="Logout">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span>Logout</span>
-                </a>
+            <div class="header-info">
+                <h1 class="header-title">Cervical Spine AI Analyzer</h1>
+                <span class="header-subtitle">Upload & Analyze X Ray Image</span>
             </div>
         </div>
-    </header>
 
-    <main class="main-content">
-        <div class="form-container">
-            <!-- Flash Messages -->
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="flash-message {{ 'error' if category == 'error' else 'success' }}">
-                            <i class="fas fa-{{ 'exclamation-circle' if category == 'error' else 'check-circle' }}"></i>
-                            <span>{{ message }}</span>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
+        <div class="header-right">
+            <div class="user-section">
+                <i class="fas fa-user-md"></i>
+                <span class="user-name">{{ session.user }}</span>
+            </div>
+            <a href="{{ url_for('routes.logout') }}" class="action-btn btn-logout">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
 
-            <!-- Form Card -->
-            <div class="form-card">
-                <div class="form-header">
-                    <h2 class="form-title">Upload X-Ray Image</h2>
-                    <p class="form-subtitle">Drag and drop your image or click to browse</p>
+    </div>
+</header>
+
+<!-- ================= MAIN ================= -->
+<main class="main-content">
+    <div class="form-container">
+
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash-message {{ 'error' if category == 'error' else 'success' }}">
+                    <i class="fas fa-{{ 'exclamation-circle' if category == 'error' else 'check-circle' }}"></i>
+                    <span>{{ message }}</span>
+                </div>
+            {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        <!-- ================= FORM CARD ================= -->
+        <div class="form-card">
+
+            <div class="form-header">
+                <h2 class="form-title">Upload X Ray Image</h2>
+                <p class="form-subtitle">Drag and drop your image or click to browse</p>
+            </div>
+
+            <form method="POST"
+                  enctype="multipart/form-data"
+                  id="uploadForm"
+                  class="form-wrapper">
+
+                <!-- Upload zone -->
+                <div id="uploadArea" class="upload-zone">
+                    <div class="zone-content">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p class="zone-text">Drag and drop your X ray image here</p>
+                        <p class="zone-subtext">or click to select a file</p>
+                        <p class="zone-formats">Supported formats PNG JPG JPEG TIFF</p>
+                    </div>
+
+                    <!-- Hidden file input -->
+                    <input
+                        type="file"
+                        name="xray_file"
+                        id="fileInput"
+                        accept=".png,.jpg,.jpeg,.tif,.tiff"
+                        style="display: none;">
                 </div>
 
-                <form method="POST" enctype="multipart/form-data" id="uploadForm" class="form-wrapper">
-                    <!-- Drag-Drop Zone -->
-                    <div id="uploadArea" class="upload-zone">
-                        <div class="zone-content">
-                            <i class="fas fa-cloud-upload-alt"></i>
-                            <p class="zone-text">Drag and drop your X-ray image here</p>
-                            <p class="zone-subtext">or click to select a file</p>
-                            <p class="zone-formats">Supported: PNG, JPG, JPEG, TIFF</p>
-                        </div>
-                        <input type="file" name="xray_file" id="fileInput" accept=".png,.jpg,.jpeg,.tif,.tiff" required style="display: none;">
+                <!-- Preview -->
+                <div id="previewContainer" class="preview-section" style="display: none;">
+                    <label class="preview-label">Image Preview</label>
+                    <div class="mini-viewport">
+                        <img id="previewImg" src="" alt="Preview" class="preview-image">
                     </div>
+                    <p class="preview-name" id="previewName"></p>
 
-                    <!-- Image Preview - Mini Viewport -->
-                    <div id="previewContainer" class="preview-section" style="display: none;">
-                        <label class="preview-label">Image Preview</label>
-                        <div class="mini-viewport">
-                            <img id="previewImg" src="" alt="Preview" class="preview-image">
-                        </div>
-                        <p class="preview-name" id="previewName"></p>
-                        <button type="button" class="btn-clear" id="clearPreview" title="Clear and reselect">
-                            <i class="fas fa-times"></i> Clear Selection
-                        </button>
-                    </div>
-
-                    <!-- File Info -->
-                    <div id="fileInfo" class="file-info" style="display: none;">
-                        <div class="info-item">
-                            <span class="info-label">File Size:</span>
-                            <span class="info-value" id="fileSize">-</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">File Type:</span>
-                            <span class="info-value" id="fileType">-</span>
-                        </div>
-                    </div>
-
-                    <!-- Clinical Indication -->
-                    <div class="form-group">
-                        <label for="clinicalIndication" class="form-label">
-                            <i class="fas fa-stethoscope"></i> Clinical Indication / Question
-                        </label>
-                        <textarea 
-                            name="notes" 
-                            id="clinicalIndication" 
-                            class="form-textarea" 
-                            rows="3" 
-                            placeholder="Describe the clinical indication or specific question (e.g., 'Evaluate for cervical spondylosis, assess disc herniation levels')"
-                        ></textarea>
-                        <p class="form-hint">Provide clinical context to help interpret the analysis results</p>
-                    </div>
-
-                    <!-- Submit Button -->
-                    <button type="submit" id="analyzeBtn" class="analyze-button">
-                        <span class="btn-text">
-                            <i class="fas fa-search"></i> Analyze Scan
-                        </span>
-                        <span class="btn-spinner" id="btnSpinner" style="display: none;">
-                            <i class="fas fa-spinner fa-spin"></i>
-                        </span>
+                    <button type="button" class="btn-clear" id="clearPreview">
+                        <i class="fas fa-times"></i> Clear Selection
                     </button>
+                </div>
 
-                    <!-- Loading Overlay -->
-                    <div id="processingOverlay" class="processing-overlay" style="display: none;">
-                        <div class="processing-content">
-                            <i class="fas fa-spinner fa-spin"></i>
-                            <p>Processing Image Data...</p>
-                        </div>
+                <!-- File info -->
+                <div id="fileInfo" class="file-info" style="display: none;">
+                    <div class="info-item">
+                        <span class="info-label">File Size</span>
+                        <span class="info-value" id="fileSize">-</span>
                     </div>
-                </form>
-            </div>
+                    <div class="info-item">
+                        <span class="info-label">File Type</span>
+                        <span class="info-value" id="fileType">-</span>
+                    </div>
+                </div>
+
+                <!-- Clinical notes -->
+                <div class="form-group">
+                    <label for="clinicalIndication" class="form-label">
+                        <i class="fas fa-stethoscope"></i> Clinical Indication
+                    </label>
+                    <textarea
+                        name="notes"
+                        id="clinicalIndication"
+                        class="form-textarea"
+                        rows="3"
+                        placeholder="Describe the clinical question or indication"></textarea>
+                    <p class="form-hint">Optional but recommended</p>
+                </div>
+
+                <!-- Submit -->
+                <button type="submit" id="analyzeBtn" class="analyze-button">
+                    <span class="btn-text">
+                        <i class="fas fa-search"></i> Analyze Scan
+                    </span>
+                    <span class="btn-spinner" id="btnSpinner" style="display: none;">
+                        <i class="fas fa-spinner fa-spin"></i>
+                    </span>
+                </button>
+
+                <!-- Overlay -->
+                <div id="processingOverlay" class="processing-overlay" style="display: none;">
+                    <div class="processing-content">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>Processing Image Data</p>
+                    </div>
+                </div>
+
+            </form>
         </div>
-    </main>
+    </div>
+</main>
 
-    <script>
-        // DOM Elements
-        const uploadArea = document.getElementById('uploadArea');
-        const fileInput = document.getElementById('fileInput');
-        const previewContainer = document.getElementById('previewContainer');
-        const previewImg = document.getElementById('previewImg');
-        const previewName = document.getElementById('previewName');
-        const clearPreview = document.getElementById('clearPreview');
-        const uploadForm = document.getElementById('uploadForm');
-        const analyzeBtn = document.getElementById('analyzeBtn');
-        const btnText = document.querySelector('.btn-text');
-        const btnSpinner = document.getElementById('btnSpinner');
-        const processingOverlay = document.getElementById('processingOverlay');
-        const fileInfo = document.getElementById('fileInfo');
+<!-- ================= SCRIPT ================= -->
+<script>
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+    const previewContainer = document.getElementById('previewContainer');
+    const previewImg = document.getElementById('previewImg');
+    const previewName = document.getElementById('previewName');
+    const clearPreview = document.getElementById('clearPreview');
+    const uploadForm = document.getElementById('uploadForm');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const btnText = document.querySelector('.btn-text');
+    const btnSpinner = document.getElementById('btnSpinner');
+    const processingOverlay = document.getElementById('processingOverlay');
+    const fileInfo = document.getElementById('fileInfo');
 
-        // Constants
-        const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-        const ALLOWED_TYPES = ['image/png', 'image/jpeg', 'image/tiff'];
+    const MAX_FILE_SIZE = 10 * 1024 * 1024;
+    const ALLOWED_TYPES = ['image/png', 'image/jpeg', 'image/tiff'];
 
-        // Initialize event listeners
-        initializeEventListeners();
+    ['dragenter','dragover','dragleave','drop'].forEach(event => {
+        uploadArea.addEventListener(event, preventDefaults);
+        document.body.addEventListener(event, preventDefaults);
+    });
 
-        function initializeEventListeners() {
-            // Drag and drop events
-            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-                uploadArea.addEventListener(eventName, preventDefaults, false);
-                document.body.addEventListener(eventName, preventDefaults, false);
-            });
+    uploadArea.addEventListener('dragenter', () => uploadArea.classList.add('dragover'));
+    uploadArea.addEventListener('dragover', () => uploadArea.classList.add('dragover'));
+    uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+    uploadArea.addEventListener('drop', handleDrop);
 
-            ['dragenter', 'dragover'].forEach(eventName => {
-                uploadArea.addEventListener(eventName, highlight, false);
-            });
+    uploadArea.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', e => processFiles(e.target.files));
+    clearPreview.addEventListener('click', clearSelection);
+    uploadForm.addEventListener('submit', handleFormSubmit);
 
-            ['dragleave', 'drop'].forEach(eventName => {
-                uploadArea.addEventListener(eventName, unhighlight, false);
-            });
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
 
-            uploadArea.addEventListener('drop', handleDrop, false);
-            uploadArea.addEventListener('click', () => fileInput.click());
-            fileInput.addEventListener('change', handleFileSelect);
-            clearPreview.addEventListener('click', clearSelection);
-            uploadForm.addEventListener('submit', handleFormSubmit);
-        }
+    function handleDrop(e) {
+        const files = e.dataTransfer.files;
+        processFiles(files);
+    }
 
-        function preventDefaults(e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
+    function processFiles(files) {
+        if (!files || files.length === 0) return;
 
-        function highlight(e) {
-            uploadArea.classList.add('dragover');
-        }
+        const file = files[0];
 
-        function unhighlight(e) {
-            uploadArea.classList.remove('dragover');
-        }
-
-        function handleDrop(e) {
-            const dt = e.dataTransfer;
-            const files = dt.files;
-            processFiles(files);
-        }
-
-        function handleFileSelect(e) {
-            const files = e.target.files;
-            processFiles(files);
-        }
-
-        function processFiles(files) {
-            if (files.length === 0) return;
-
-            const file = files[0];
-
-            // Validate file type
-            if (!ALLOWED_TYPES.includes(file.type) && !file.name.match(/\.(png|jpg|jpeg|tiff|tif)$/i)) {
-                showError('Invalid file type. Please upload PNG, JPG, or TIFF images.');
-                return;
-            }
-
-            // Validate file size
-            if (file.size > MAX_FILE_SIZE) {
-                showError('File size exceeds 10MB limit. Please choose a smaller file.');
-                fileInput.value = '';
-                return;
-            }
-
-            displayPreview(file);
-            displayFileInfo(file);
-        }
-
-        function displayPreview(file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                previewImg.src = e.target.result;
-                previewName.textContent = file.name;
-                previewContainer.style.display = 'block';
-                fileInfo.style.display = 'grid';
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function displayFileInfo(file) {
-            document.getElementById('fileSize').textContent = formatFileSize(file.size);
-            document.getElementById('fileType').textContent = file.type || 'Image File';
-        }
-
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-        }
-
-        function clearSelection(e) {
-            e.preventDefault();
+        if (!ALLOWED_TYPES.includes(file.type) &&
+            !file.name.match(/\.(png|jpg|jpeg|tiff|tif)$/i)) {
             fileInput.value = '';
-            previewContainer.style.display = 'none';
-            fileInfo.style.display = 'none';
-            previewImg.src = '';
-            previewName.textContent = '';
+            showError('Invalid file type');
+            return;
         }
 
-        function handleFormSubmit(e) {
-            // Form validation is handled by HTML5
-            // Show loading state
-            btnText.style.display = 'none';
-            btnSpinner.style.display = 'inline';
-            analyzeBtn.disabled = true;
-            processingOverlay.style.display = 'flex';
+        if (file.size > MAX_FILE_SIZE) {
+            fileInput.value = '';
+            showError('File exceeds 10MB limit');
+            return;
         }
 
-        function showError(message) {
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'flash-message error';
-            errorDiv.innerHTML = `<i class="fas fa-exclamation-circle"></i><span>${message}</span>`;
-            document.querySelector('main').insertBefore(errorDiv, document.querySelector('.form-container'));
-            
-            setTimeout(() => {
-                errorDiv.remove();
-            }, 5000);
+        fileInput.files = files;
+        displayPreview(file);
+        displayFileInfo(file);
+    }
+
+    function displayPreview(file) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            previewImg.src = e.target.result;
+            previewName.textContent = file.name;
+            previewContainer.style.display = 'block';
+            fileInfo.style.display = 'grid';
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function displayFileInfo(file) {
+        document.getElementById('fileSize').textContent = formatFileSize(file.size);
+        document.getElementById('fileType').textContent = file.type || 'Image';
+    }
+
+    function formatFileSize(bytes) {
+        const sizes = ['Bytes','KB','MB'];
+        if (bytes === 0) return '0 Bytes';
+        const i = Math.floor(Math.log(bytes) / Math.log(1024));
+        return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
+    }
+
+    function clearSelection(e) {
+        e.preventDefault();
+        fileInput.value = '';
+        previewContainer.style.display = 'none';
+        fileInfo.style.display = 'none';
+        previewImg.src = '';
+        previewName.textContent = '';
+    }
+
+    function handleFormSubmit(e) {
+        if (!fileInput.files || fileInput.files.length === 0) {
+            e.preventDefault();
+            showError('Please upload an X ray image before analysis');
+            return;
         }
-    </script>
+
+        btnText.style.display = 'none';
+        btnSpinner.style.display = 'inline';
+        analyzeBtn.disabled = true;
+        processingOverlay.style.display = 'flex';
+    }
+
+    function showError(message) {
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'flash-message error';
+        errorDiv.innerHTML = `<i class="fas fa-exclamation-circle"></i><span>${message}</span>`;
+        document.querySelector('.form-container').prepend(errorDiv);
+
+        setTimeout(() => errorDiv.remove(), 5000);
+    }
+</script>
+
 </body>
 </html>
